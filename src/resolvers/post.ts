@@ -1,4 +1,5 @@
-import { Resolver, Query, Arg, Mutation } from "type-graphql";
+import { isAuth } from "../middleware/isAuth";
+import { Resolver, Query, Arg, Mutation, UseMiddleware } from "type-graphql";
 import { Post } from "../entities/Post";
 
 @Resolver()
@@ -14,6 +15,7 @@ export class PostResolver {
   }
 
   @Mutation(() => Post)
+  @UseMiddleware(isAuth)
   async createPost(@Arg("text") text: string): Promise<Post> {
     return Post.create({ text }).save();
   }
