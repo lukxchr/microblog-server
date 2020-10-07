@@ -5,16 +5,29 @@ import {
   Arg,
   Mutation,
   UseMiddleware,
-  Ctx,
+  Ctx,, Int
 } from "type-graphql";
 import { Post } from "../entities/Post";
 import { MyContext } from "src/types";
+import { getConnection } from "typeorm";
 
 @Resolver()
 export class PostResolver {
   @Query(() => [Post])
-  async posts(): Promise<Post[]> {
-    return Post.find();
+  async posts(
+    @Arg("limit", () => Int) limit: number,
+    @Arg("cursor", () => String, { nullable: true }) cursor: string | null //timestamp as string (too large num to pass as int)
+  ): Promise<Post[]> {
+    const realLimit = Math.min(limit, 50);
+    const qb = getConnection()
+      .getRepository(Post)
+      .createQueryBuilder("posts")
+      .orderBy('"createdAt"', "DESC")
+      .take(realLimit);
+    if (cursor) {
+      qb.where('"createdAt" < :cursor', { cursor: new Date(parseInt(cursor)) }); //if cursor == p1.createdAt => get posts older than p1 (p1 not included)
+    }
+    return qb.getMany();
   }
 
   @Query(() => Post, { nullable: true })
