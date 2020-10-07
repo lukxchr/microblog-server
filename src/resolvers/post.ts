@@ -5,14 +5,24 @@ import {
   Arg,
   Mutation,
   UseMiddleware,
-  Ctx,, Int
+  Ctx,
+  Int,
+  Root,
+  FieldResolver,
 } from "type-graphql";
 import { Post } from "../entities/Post";
 import { MyContext } from "src/types";
 import { getConnection } from "typeorm";
 
-@Resolver()
+@Resolver(Post)
 export class PostResolver {
+  @FieldResolver(() => String)
+  textSnippet(@Root() post: Post) {
+    return post.text.length <= 200
+      ? post.text
+      : post.text.slice(0, 200) + "...";
+  }
+
   @Query(() => [Post])
   async posts(
     @Arg("limit", () => Int) limit: number,
