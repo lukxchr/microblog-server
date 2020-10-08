@@ -30,7 +30,7 @@ const main = async () => {
     port: 5431,
   });
   await conn.runMigrations();
-
+  //await Post.delete({});
   const app = express();
 
   const RedisStore = connectRedis(session);
