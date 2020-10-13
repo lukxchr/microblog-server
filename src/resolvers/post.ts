@@ -15,6 +15,7 @@ import {
 import { Post } from "../entities/Post";
 import { MyContext } from "src/types";
 import { getConnection } from "typeorm";
+import { Like } from "../entities/Like";
 
 @ObjectType()
 class PaginatedPosts {
@@ -26,6 +27,52 @@ class PaginatedPosts {
 
 @Resolver(Post)
 export class PostResolver {
+  @Mutation(() => Boolean)
+  @UseMiddleware(isAuth)
+  async toggleLike(
+    @Arg("postId", () => Int) postId: number,
+    @Ctx() { req }: MyContext
+  ) {
+    const userId = req.session!.userId;
+
+    const like = await Like.findOne({ userId, postId });
+    if (like === undefined) {
+      //user did not like this post in the past
+      await getConnection().query(
+        `
+        START TRANSACTION;
+  
+        insert into "like" ("userId", "postId")
+        values (${userId},${postId});
+  
+        update post
+        set "likesCount" = "likesCount" + 1
+        where id = ${postId};
+
+        COMMIT;
+      `
+      );
+    } else {
+      //user already liked this post => unlike now
+      await getConnection().query(
+        `
+        START TRANSACTION;
+  
+        delete from "like" 
+        where "userId"=${userId} and "postId"=${postId};
+  
+        update post
+        set "likesCount" = "likesCount" - 1
+        where id = ${postId};
+
+        COMMIT;
+      `
+      );
+    }
+
+    return true;
+  }
+
   @FieldResolver(() => String)
   textSnippet(@Root() post: Post) {
     return post.text.length <= 200
