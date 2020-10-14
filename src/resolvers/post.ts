@@ -36,8 +36,8 @@ export class PostResolver {
     const userId = req.session!.userId;
 
     const like = await Like.findOne({ userId, postId });
-    if (like === undefined) {
-      //user did not like this post in the past
+    //user did not like this post in the past
+    if (!like) {
       await getConnection().query(
         `
         START TRANSACTION;
@@ -52,8 +52,8 @@ export class PostResolver {
         COMMIT;
       `
       );
-    } else {
       //user already liked this post => unlike now
+    } else {
       await getConnection().query(
         `
         START TRANSACTION;
@@ -83,14 +83,22 @@ export class PostResolver {
   @Query(() => PaginatedPosts)
   async posts(
     @Arg("limit", () => Int) limit: number,
-    @Arg("cursor", () => String, { nullable: true }) cursor: string | null //timestamp as string (too large num to pass as int)
+    @Arg("cursor", () => String, { nullable: true }) cursor: string | null, //timestamp as string (too large num to pass as int)
+    @Ctx() { req }: MyContext
   ): Promise<PaginatedPosts> {
     const realLimit = Math.min(limit, 100);
     const realLimitPlusOne = realLimit + 1;
 
     const replacements: any[] = [realLimitPlusOne];
+
+    if (req.session!.userId) {
+      replacements.push(req.session!.userId);
+    }
+
+    let cursorIdx = 3;
     if (cursor) {
       replacements.push(new Date(parseInt(cursor)));
+      cursorIdx = replacements.length;
     }
 
     const posts = await getConnection().query(
@@ -102,10 +110,15 @@ export class PostResolver {
       'email', u.email,
       'createdAt', u."createdAt",
       'updatedAt', u."updatedAt"
-      ) creator
+      ) creator,
+      ${
+        req.session!.userId
+          ? '(select count(*) != 0 from "like" where "userId" = $2 and "postId" = p.id) "hasLiked"'
+          : 'false as "hasLiked"'
+      }
     from post p
     inner join public.user u on u.id = p."creatorId"
-    ${cursor ? `where p."createdAt" < $2` : ""}
+    ${cursor ? `where p."createdAt" < $${cursorIdx}` : ""}
     order by p."createdAt" DESC
     limit $1
     `,

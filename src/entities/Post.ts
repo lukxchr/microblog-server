@@ -36,6 +36,9 @@ export class Post extends BaseEntity {
   likesCount!: number;
 
   @Field()
+  hasLiked: boolean; //shows if current user already liked the post
+
+  @Field()
   @Column()
   creatorId: number;
 
