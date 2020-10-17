@@ -19,6 +19,8 @@ export class Like extends BaseEntity {
   postId: number;
 
   @Field(() => Post)
-  @ManyToOne(() => Post, (post) => post.likes)
+  @ManyToOne(() => Post, (post) => post.likes, {
+    onDelete: "CASCADE",
+  })
   post: Post;
 }

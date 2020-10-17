@@ -11,6 +11,7 @@ import {
 import { Field, Int, ObjectType } from "type-graphql";
 import { User } from "./User";
 import { Like } from "./Like";
+import { Comment } from "./Comment";
 
 @ObjectType()
 @Entity()
@@ -48,4 +49,7 @@ export class Post extends BaseEntity {
 
   @OneToMany(() => Like, (like) => like.post)
   likes: Like[];
+
+  @OneToMany(() => Comment, (comment) => comment.post)
+  comments: Comment[];
 }

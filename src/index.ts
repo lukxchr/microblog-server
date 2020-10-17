@@ -17,6 +17,8 @@ import { Post } from "./entities/Post";
 import { User } from "./entities/User";
 import path from "path";
 import { Like } from "./entities/Like";
+import { Comment } from "./entities/Comment";
+import { CommentResolver } from "./resolvers/comment";
 
 const main = async () => {
   const conn = await createConnection({
@@ -27,7 +29,7 @@ const main = async () => {
     logging: true,
     synchronize: true,
     migrations: [path.join(__dirname, "./migrations/*")],
-    entities: [User, Post, Like],
+    entities: [User, Post, Like, Comment],
     port: 5431,
   });
   await conn.runMigrations();
@@ -65,7 +67,7 @@ const main = async () => {
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [HelloResolver, PostResolver, UserResolver],
+      resolvers: [HelloResolver, PostResolver, UserResolver, CommentResolver],
       validate: false,
     }),
     context: ({ req, res }): MyContext => ({ req, res, redis }),
