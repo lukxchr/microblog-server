@@ -19,6 +19,7 @@ import path from "path";
 import { Like } from "./entities/Like";
 import { Comment } from "./entities/Comment";
 import { CommentResolver } from "./resolvers/comment";
+import { Tag } from "./entities/Tag";
 
 const main = async () => {
   const conn = await createConnection({
@@ -29,7 +30,7 @@ const main = async () => {
     logging: true,
     synchronize: true,
     migrations: [path.join(__dirname, "./migrations/*")],
-    entities: [User, Post, Like, Comment],
+    entities: [User, Post, Like, Comment, Tag],
     port: 5431,
   });
   await conn.runMigrations();

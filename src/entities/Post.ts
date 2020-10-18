@@ -1,17 +1,19 @@
+import { Field, Int, ObjectType } from "type-graphql";
 import {
-  Entity,
-  PrimaryGeneratedColumn,
+  BaseEntity,
   Column,
   CreateDateColumn,
-  UpdateDateColumn,
-  BaseEntity,
+  Entity,
+  ManyToMany,
   ManyToOne,
   OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from "typeorm";
-import { Field, Int, ObjectType } from "type-graphql";
-import { User } from "./User";
-import { Like } from "./Like";
 import { Comment } from "./Comment";
+import { Like } from "./Like";
+import { Tag } from "./Tag";
+import { User } from "./User";
 
 @ObjectType()
 @Entity()
@@ -50,6 +52,19 @@ export class Post extends BaseEntity {
   @OneToMany(() => Like, (like) => like.post)
   likes: Like[];
 
+  @Field(() => [Comment])
   @OneToMany(() => Comment, (comment) => comment.post)
   comments: Comment[];
+
+  @Field(() => [Tag])
+  @ManyToMany(() => Tag, (tag) => tag.posts)
+  tags: Tag[];
+
+  //@Field(() => [Tag])
+  // @OneToMany(() => Tag, (tag) => tag.posts)
+  // tags: Tag[];
+
+  // @Field(() => [Tag])
+  // @ManyToMany(() => Tag, (tag) => tag.posts)
+  // tags: Tag[];
 }
