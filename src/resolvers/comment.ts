@@ -15,7 +15,7 @@ import { Comment } from "../entities/Comment";
 export class CommentResolver {
   @Query(() => [Comment])
   async comments(@Arg("postId", () => Int) postId: number) {
-    return await Comment.find({ postId });
+    return await Comment.find({ where: { postId }, relations: ["user"] });
   }
 
   @Mutation(() => Comment)
