@@ -7,7 +7,7 @@
 5. Comments CRUD - in progress
 6. Tags - to do
 
-===
+### Instructions:
 
 1. Redis server at localhost:6379
 2. Postgres server at 5431
